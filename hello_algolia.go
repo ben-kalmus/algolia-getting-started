@@ -2,15 +2,23 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/algolia/algoliasearch-client-go/v4/algolia/search"
 )
 
 func main() {
-	appID := "ALGOLIA_APPLICATION_ID"
+	appID, ok := os.LookupEnv("APP_ID")
+	if !ok {
+		panic("env APP_ID not set. Create and run source .env")
+	}
 	// API key with `addObject` and `search` ACL
-	apiKey := "ALGOLIA_API_KEY"
-	indexName := "test-index"
+	apiKey, ok := os.LookupEnv("API_KEY")
+	if !ok {
+		panic("env API_KEY not set. Create and run source .env")
+	}
+
+	indexName := "algolia-tutorial"
 
 	record := map[string]any{
 		"objectID": "object-1",
@@ -42,7 +50,7 @@ func main() {
 			search.NewEmptySearchMethodParams().SetRequests(
 				[]search.SearchQuery{
 					*search.SearchForHitsAsSearchQuery(
-						search.NewEmptySearchForHits().SetIndexName(indexName).SetQuery("time"),
+						search.NewEmptySearchForHits().SetIndexName(indexName).SetQuery("test"),
 					),
 				},
 			),
