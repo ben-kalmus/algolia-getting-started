@@ -34,6 +34,29 @@ func saveObject(client *search.APIClient, indexName string, record map[string]an
 	return nil
 }
 
+func searchRequest(client *search.APIClient, index, query string) (*search.SearchResponse, error) {
+	searchParams := search.SearchParams{
+		SearchParamsObject: search.
+			NewEmptySearchParamsObject().
+			SetQuery(query),
+	}
+
+	response, err := client.SearchSingleIndex(
+		client.
+			NewApiSearchSingleIndexRequest(index).
+			WithSearchParams(&searchParams),
+		// Add a custom HTTP header to this request
+		search.WithHeaderParam("extra-header", "greetings"),
+		// Add query parameters to this request
+		search.WithQueryParam("queryParam", "value"),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return response, nil
+}
+
 func main() {
 	appID, ok := os.LookupEnv("APP_ID")
 	if !ok {
@@ -47,16 +70,15 @@ func main() {
 
 	indexName := "algolia-tutorial"
 
-	record := map[string]any{
-		"objectID": "object-1",
-		"name":     "test record",
-	}
-
 	client, err := setupClient(appID, apiKey)
 	if err != nil {
 		panic(err)
 	}
 
+	record := map[string]any{
+		"objectID": "object-1",
+		"name":     "test record",
+	}
 	err = saveObject(client, indexName, record)
 	if err != nil {
 		panic(err)
@@ -77,6 +99,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("client.Search response:")
 	fmt.Println(searchResp.Results)
+
+	results, err := searchRequest(client, indexName, "test")
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\n\n")
+	fmt.Println("client.SearchSingleIndex response:")
+	// hits := results.GetHits()
+	for _, hit := range results.GetHits() {
+		fmt.Println(hit)
+	}
 }
