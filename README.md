@@ -2,7 +2,6 @@
 
 ## Getting Started
 
-
 Following guide from [documentation](https://www.algolia.com/doc/libraries/go/v4/).
 
 ### Running

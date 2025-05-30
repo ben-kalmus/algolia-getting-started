@@ -7,6 +7,33 @@ import (
 	"github.com/algolia/algoliasearch-client-go/v4/algolia/search"
 )
 
+func setupClient(appID, apiKey string) (*search.APIClient, error) {
+	client, err := search.NewClient(appID, apiKey)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
+}
+
+func saveObject(client *search.APIClient, indexName string, record map[string]any) error {
+	// Add record to an index
+	saveResp, err := client.SaveObject(
+		client.NewApiSaveObjectRequest(indexName, record),
+	)
+	if err != nil {
+		return err
+	}
+
+	// Wait until indexing is done
+	_, err = client.WaitForTask(indexName, saveResp.TaskID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func main() {
 	appID, ok := os.LookupEnv("APP_ID")
 	if !ok {
@@ -25,21 +52,12 @@ func main() {
 		"name":     "test record",
 	}
 
-	client, err := search.NewClient(appID, apiKey)
+	client, err := setupClient(appID, apiKey)
 	if err != nil {
 		panic(err)
 	}
 
-	// Add record to an index
-	saveResp, err := client.SaveObject(
-		client.NewApiSaveObjectRequest(indexName, record),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	// Wait until indexing is done
-	_, err = client.WaitForTask(indexName, saveResp.TaskID)
+	err = saveObject(client, indexName, record)
 	if err != nil {
 		panic(err)
 	}
